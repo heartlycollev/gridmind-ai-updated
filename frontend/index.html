@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GridMind AI</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"></script>
+</head>
+<body>
+
+  <div class="gm-root" id="gm-root">
+
+    <!-- ── LEFT HOVER ZONE ── -->
+    <div class="gm-left-zone">
+      <div class="gm-hamburger" id="gm-hamburger" aria-label="Chat history">
+        <i class="ti ti-menu-2"></i>
+        <span class="gm-tooltip gm-tooltip-right">View chat history &amp; start a new chat</span>
+      </div>
+    </div>
+
+    <!-- ── LEFT FLOATING PANEL (chat history) ── -->
+    <div class="gm-float-panel" id="gm-panel">
+      <div class="gm-panel-top">
+        <button class="gm-new-btn" id="gm-new-btn">
+          <i class="ti ti-plus"></i>
+          New chat
+        </button>
+      </div>
+      <div class="gm-hist-scroll">
+        <div id="gm-hist-list"></div>
+      </div>
+    </div>
+
+    <!-- ── LEFT DOCS HOVER ZONE (Source Documents - halfway down left) ── -->
+    <div class="gm-docs-zone">
+      <div class="gm-docs-trigger" id="gm-docs-trigger" aria-label="Source Documents Library">
+        <i class="ti ti-books"></i>
+        <span class="gm-tooltip gm-tooltip-right">Browse source documents library</span>
+      </div>
+    </div>
+
+    <!-- ── LEFT FLOATING PANEL (Source Documents Library) ── -->
+    <div class="gm-docs-panel" id="gm-docs-panel">
+      <div class="gm-docs-panel-header">
+        <div class="gm-docs-header-title">
+          <i class="ti ti-books"></i>
+          <span>SOURCE DOCUMENTS</span>
+        </div>
+        <span class="gm-docs-count">7 docs</span>
+      </div>
+      <div class="gm-docs-scroll">
+
+        <!-- Doc 1: Energy Act 2019 -->
+        <div class="gm-doc-card">
+          <div class="gm-doc-card-top">
+            <h4 class="gm-doc-title">Energy Act 2019</h4>
+            <span class="gm-doc-tag legislation">LEGISLATION</span>
+          </div>
+          <p class="gm-doc-desc">
+            Kenya's primary energy sector legislation, assented on 12 March 2019. Establishes EPRA, REREC, NuPEA, and the Energy and Petroleum Tribunal, and governs licensing for electricity generation, transmission, distribution, renewable energy feed-in tariffs, geothermal resources, and downstream coal.
+          </p>
+          <div class="gm-doc-ask-label">YOU CAN ASK ABOUT</div>
+          <div class="gm-doc-q-list">
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What licences are required under the Energy Act for electricity generation and distribution?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What are the functions and powers of EPRA under the Energy Act 2019?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>How does the Energy Act regulate geothermal resource exploration and extraction?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What is the role of the Energy and Petroleum Tribunal established by the Act?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What does the Energy Act say about the renewable energy feed-in tariff system?</button>
+          </div>
+        </div>
+
+        <!-- Doc 2: Petroleum Act Cap 308 -->
+        <div class="gm-doc-card">
+          <div class="gm-doc-card-top">
+            <h4 class="gm-doc-title">Petroleum Act Cap 308</h4>
+            <span class="gm-doc-tag legislation">LEGISLATION</span>
+          </div>
+          <p class="gm-doc-desc">
+            Governs upstream petroleum exploration contracts, production sharing (Cost Oil/Profit Oil via R-Factor), midstream and downstream licensing, local content and training obligations, environmental compliance, decommissioning, and revenue sharing between the Government and contractors.
+          </p>
+          <div class="gm-doc-ask-label">YOU CAN ASK ABOUT</div>
+          <div class="gm-doc-q-list">
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>How does the Petroleum Act define production sharing between the Government and contractors?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What local content and training requirements apply to petroleum contractors?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What are the environmental compliance and waste management obligations for upstream operations?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>How are petroleum field decommissioning plans and decommissioning funds regulated?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What licences and permits are required for midstream and downstream petroleum business?</button>
+          </div>
+        </div>
+
+        <!-- Doc 3: Green Hydrogen Strategy 2023 -->
+        <div class="gm-doc-card">
+          <div class="gm-doc-card-top">
+            <h4 class="gm-doc-title">Green Hydrogen Strategy 2023</h4>
+            <span class="gm-doc-tag policy">POLICY</span>
+          </div>
+          <p class="gm-doc-desc">
+            Kenya's strategy for leveraging its abundant geothermal, wind, solar, and hydro resources for large-scale green hydrogen production. Developed with EU and GIZ support, it identifies four focus areas: strategy formulation, regulatory frameworks, financial mechanisms, and stakeholder engagement.
+          </p>
+          <div class="gm-doc-ask-label">YOU CAN ASK ABOUT</div>
+          <div class="gm-doc-q-list">
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What renewable energy resources does Kenya plan to use for green hydrogen production?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What roles do KEBS, KenGen, KPLC, and EPRA play in green hydrogen development?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What regulatory and policy frameworks are proposed to enable green hydrogen in Kenya?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What are the four pivotal focus areas of Kenya's green hydrogen strategy?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>How does the green hydrogen strategy align with Kenya Vision 2030 and the Paris Agreement?</button>
+          </div>
+        </div>
+
+        <!-- Doc 4: KETIP 2023-2050 -->
+        <div class="gm-doc-card">
+          <div class="gm-doc-card-top">
+            <h4 class="gm-doc-title">Kenya Energy Transition &amp; Investment Plan 2023–2050 (KETIP)</h4>
+            <span class="gm-doc-tag strategy">STRATEGY</span>
+          </div>
+          <p class="gm-doc-desc">
+            Modelled pathway for Kenya to reach Net Zero by 2050, requiring ~USD 600 billion in cumulative capital investment. Identifies six key decarbonization technologies — renewables, electrification, low-carbon hydrogen, battery EVs, clean cooking, and carbon capture — across power, transport, industry, and buildings.
+          </p>
+          <div class="gm-doc-ask-label">YOU CAN ASK ABOUT</div>
+          <div class="gm-doc-q-list">
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What are the six decarbonization technologies identified in the KETIP orderly transition pathway?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>How much cumulative capital investment does KETIP estimate is needed to reach Net Zero by 2050?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What are the projected CO₂ emissions under the Business As Usual scenario versus Net Zero?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What green growth opportunities does the energy transition create for Kenya's economy?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>How does the KETIP compare the slower, orderly, and accelerated transition pathways?</button>
+          </div>
+        </div>
+
+        <!-- Doc 5: KNEECS 2022 -->
+        <div class="gm-doc-card">
+          <div class="gm-doc-card-top">
+            <h4 class="gm-doc-title">KNEECS Implementation Plan 2022</h4>
+            <span class="gm-doc-tag efficiency">EFFICIENCY</span>
+          </div>
+          <p class="gm-doc-desc">
+            Detailed action plan implementing Kenya's National Energy Efficiency and Conservation Strategy across six sectors: households (MEPS for appliances and cookstoves), buildings (green building codes), manufacturing and agriculture (energy audits), transport (fuel economy, e-mobility), power supply (grid stability), and cross-cutting institutional capacity.
+          </p>
+          <div class="gm-doc-ask-label">YOU CAN ASK ABOUT</div>
+          <div class="gm-doc-q-list">
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What Minimum Energy Performance Standards (MEPS) are being implemented for household appliances?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What are the energy audit requirements for manufacturing and commercial facilities?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What activities does KNEECS outline for increasing e-mobility adoption in Kenya?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>How does the plan promote green building codes and energy efficiency in the building sector?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What fuel economy standards and vehicle labelling does KNEECS propose for the transport sector?</button>
+          </div>
+        </div>
+
+        <!-- Doc 6: Strategic Plan 2023-2027 -->
+        <div class="gm-doc-card">
+          <div class="gm-doc-card-top">
+            <h4 class="gm-doc-title">Ministry of Energy &amp; Petroleum — Strategic Plan 2023–2027</h4>
+            <span class="gm-doc-tag roadmap">ROADMAP</span>
+          </div>
+          <p class="gm-doc-desc">
+            The Ministry's fifth-generation strategic plan, built around four Key Result Areas: energy resource development, access to energy products, environmental sustainability, and sector enablement. Reports installed generation capacity grew 40.9% to 3,312 MW (93%+ renewable) and grid connectivity reached 9.21 million customers by 2023.
+          </p>
+          <div class="gm-doc-ask-label">YOU CAN ASK ABOUT</div>
+          <div class="gm-doc-q-list">
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What is Kenya's current installed electricity generation capacity and renewable energy mix?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>How many customers were connected to the grid during the 2018–2022 period?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What are the four Key Result Areas in the Ministry's 2023–2027 Strategic Plan?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What progress was made on LPG distribution and clean cooking solutions?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What is the status of the 500kV HVDC Ethiopia-Kenya power interconnector?</button>
+          </div>
+        </div>
+
+        <!-- Doc 7: IEA Kenya 2024 Policy Review -->
+        <div class="gm-doc-card">
+          <div class="gm-doc-card-top">
+            <h4 class="gm-doc-title">IEA Kenya 2024 Policy Review</h4>
+            <span class="gm-doc-tag report">REPORT</span>
+          </div>
+          <p class="gm-doc-desc">
+            International Energy Agency (IEA) comprehensive review of Kenya's energy policies, power market dynamics, regional power trade, clean energy finance metrics, and pathways to universal energy access.
+          </p>
+          <div class="gm-doc-ask-label">YOU CAN ASK ABOUT</div>
+          <div class="gm-doc-q-list">
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What are the IEA's main policy recommendations for Kenya's power sector?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>How does Kenya's renewable energy share compare regionally in East Africa?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>What are the key bottlenecks in Kenya's grid transmission infrastructure?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>How can private sector finance be accelerated for renewable projects?</button>
+            <button class="gm-doc-q"><i class="ti ti-chevron-right"></i>How does the IEA assess Kenya's progress toward universal energy access by 2030?</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── MAIN CHAT CARD ── -->
+    <div class="gm-chat-card">
+
+      <div class="gm-topbar">
+        <span class="gm-topbar-title" id="gm-chat-title">GridMind AI</span>
+        <div class="gm-rag-pill" id="gm-rag-pill" style="display:none;">
+          <span class="gm-rag-dot"></span>RAG active
+        </div>
+      </div>
+
+      <div class="gm-messages" id="gm-msgs">
+        <div class="gm-empty-state" id="gm-empty">
+          <div class="gm-empty-icon">
+            <i class="ti ti-bolt"></i>
+          </div>
+          <p class="gm-empty-title">Ask about Kenyan energy law</p>
+          <p class="gm-empty-sub">Answers sourced from the Energy Act 2019, EPRA documents, and official policy</p>
+        </div>
+      </div>
+
+      <div class="gm-input-zone">
+        <div class="gm-sugg-row" id="gm-suggs"></div>
+        <div class="gm-composer">
+          <textarea
+            class="gm-textarea"
+            id="gm-input"
+            placeholder="Ask about Kenyan energy policy…"
+            rows="1"
+            autocomplete="off"
+          ></textarea>
+          <button class="gm-send" id="gm-send" aria-label="Send">
+            <i class="ti ti-send"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── RIGHT HOVER ZONE ── -->
+    <div class="gm-right-zone">
+      <div class="gm-right-trigger" id="gm-right-trigger" aria-label="Conversation navigator">
+        <div class="bar-group">
+          <div class="hbar"></div>
+          <div class="hbar short"></div>
+          <div class="hbar"></div>
+          <div class="hbar short"></div>
+        </div>
+        <span class="gm-tooltip gm-tooltip-left">Navigate questions in this chat</span>
+      </div>
+    </div>
+
+    <!-- ── RIGHT FLOATING PANEL (in-chat navigator) ── -->
+    <div class="gm-right-panel" id="gm-right-panel">
+      <div class="gm-right-panel-header">
+        <i class="ti ti-list-search"></i>
+        <span class="gm-right-panel-title">In this chat</span>
+      </div>
+      <div class="gm-right-scroll">
+        <div id="gm-nav-list"></div>
+      </div>
+    </div>
+
+  <!-- ── SOURCE EXCERPT MODAL ── -->
+    <div class="gm-modal-overlay" id="gm-modal-overlay" style="display: none;">
+      <div class="gm-modal-card" id="gm-modal-card" role="dialog" aria-modal="true">
+        <div class="gm-modal-header">
+          <div class="gm-modal-title-wrap">
+            <div class="gm-modal-icon-bg">
+              <i class="ti ti-file-text"></i>
+            </div>
+            <div>
+              <div class="gm-modal-doc" id="gm-modal-doc">Energy Act 2019</div>
+              <div class="gm-modal-meta">
+                <span class="gm-modal-badge" id="gm-modal-badge">Ref [1]</span>
+                <span id="gm-modal-file">energy_act_2019.pdf</span> · <span id="gm-modal-page">Page 12</span>
+              </div>
+            </div>
+          </div>
+          <button class="gm-modal-close" id="gm-modal-close" aria-label="Close modal">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <div class="gm-modal-body">
+          <div class="gm-modal-label">Verbatim Source Excerpt</div>
+          <div class="gm-modal-excerpt" id="gm-modal-excerpt"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

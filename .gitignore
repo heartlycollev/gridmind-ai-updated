@@ -1,0 +1,39 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.*.local
+
+# ChromaDB data — large binary files, rebuild with ingest.py
+chroma_db/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# VS Code
+.vscode/settings.json
+.vscode/launch.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Ollama model cache (lives in AppData, not the project)
+*.gguf
+*.bin
+
+# Temp files
+*.log
+*.tmp

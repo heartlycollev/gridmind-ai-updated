@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  rag-service:
+    build:
+      context: .
+      dockerfile: backend-python/Dockerfile
+    container_name: gridmind-rag-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+    env_file:
+      - .env
+    networks:
+      - gridmind-network
+
+  gateway:
+    build:
+      context: .
+      dockerfile: backend-node/Dockerfile
+    container_name: gridmind-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - RAG_SERVICE_URL=http://rag-service:8000
+    env_file:
+      - .env
+    depends_on:
+      - rag-service
+    networks:
+      - gridmind-network
+
+networks:
+  gridmind-network:
+    driver: bridge
