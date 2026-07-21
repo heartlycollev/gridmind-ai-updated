@@ -5,7 +5,7 @@
                GET  /health              →  { rag: true }
 ───────────────────────────────────────── */
 
-const API_BASE = 'http://localhost:5000';
+const API_BASE = window.location.origin;
 
 /* ── DOM refs ─────────────────────────── */
 const msgsEl       = document.getElementById('gm-msgs');
