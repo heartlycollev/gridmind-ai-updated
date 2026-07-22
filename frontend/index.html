@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>GridMind AI</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -13,6 +13,9 @@
 <body>
 
   <div class="gm-root" id="gm-root">
+
+    <div class="gm-mobile-backdrop" id="gm-mobile-backdrop"></div>
+
 
     <!-- ── LEFT HOVER ZONE ── -->
     <div class="gm-left-zone">
@@ -194,7 +197,9 @@
     <div class="gm-chat-card">
 
       <div class="gm-topbar">
-        <span class="gm-topbar-title" id="gm-chat-title">GridMind AI</span>
+        <div class="gm-topbar-title-wrap">
+          <span class="gm-topbar-title" id="gm-chat-title"></span>
+        </div>
         <div class="gm-rag-pill" id="gm-rag-pill" style="display:none;">
           <span class="gm-rag-dot"></span>RAG active
         </div>
@@ -205,8 +210,14 @@
           <div class="gm-empty-icon">
             <i class="ti ti-bolt"></i>
           </div>
-          <p class="gm-empty-title">Ask about Kenyan energy law</p>
-          <p class="gm-empty-sub">Answers sourced from the Energy Act 2019, EPRA documents, and official policy</p>
+          <p class="gm-empty-brand">GridMind AI</p>
+          <p class="gm-empty-title">Energy State in Kenya</p>
+          <p class="gm-empty-sub">
+            Answers are drawn from:
+            Energy Act 2019 · Petroleum Act Cap 308 · Green Hydrogen Strategy 2023 ·
+            KETIP 2023–2050 · KNEECS Implementation Plan 2022 ·
+            Ministry Strategic Plan 2023–2027 · IEA Kenya 2024 Policy Review
+          </p>
         </div>
       </div>
 

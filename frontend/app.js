@@ -23,6 +23,15 @@ const newBtn       = document.getElementById('gm-new-btn');
 const rightTrigger = document.getElementById('gm-right-trigger');
 const rightPanel   = document.getElementById('gm-right-panel');
 const sendBtn      = document.getElementById('gm-send');
+const backdrop     = document.getElementById('gm-mobile-backdrop');
+
+/* True on touch/coarse-pointer devices (phones, most tablets).
+   Used to bypass hover-based open/close logic, which is unreliable
+   on touch — mobile WebKit browsers can require a second tap to fire
+   click on elements with :hover-styled children, and mouseleave
+   doesn't fire on touch at all. Touch devices get direct tap-toggle
+   plus an explicit backdrop instead. */
+const isTouchDevice = !window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 /* ── Source Excerpt Modal DOM refs ────── */
 const modalOverlay = document.getElementById('gm-modal-overlay');
@@ -142,13 +151,35 @@ async function checkRagStatus() {
 }
 checkRagStatus();
 
-/* ── Left panel hover ─────────────────── */
+/* ── Panel open/close helpers (shared by all three panels) ── */
+function closeAllPanels() {
+  leftPanel.classList.remove('open');
+  hamburger.classList.remove('hovered');
+  rightPanel.classList.remove('open');
+  rightTrigger.classList.remove('hovered');
+  if (docsPanel)   docsPanel.classList.remove('open');
+  if (docsTrigger) docsTrigger.classList.remove('hovered');
+  if (backdrop) backdrop.classList.remove('open');
+}
+
+function openPanel(panelEl, triggerEl) {
+  closeAllPanels();
+  panelEl.classList.add('open');
+  triggerEl.classList.add('hovered');
+  if (isTouchDevice && backdrop) backdrop.classList.add('open');
+}
+
+/* Tapping the backdrop (mobile only, sits behind whichever panel is open) dismisses it */
+if (backdrop) {
+  backdrop.addEventListener('click', closeAllPanels);
+}
+
+/* ── Left panel (chat history) ────────── */
 let leftTimer = null;
 
 function openLeft() {
   clearTimeout(leftTimer);
-  leftPanel.classList.add('open');
-  hamburger.classList.add('hovered');
+  openPanel(leftPanel, hamburger);
 }
 
 function scheduleCloseLeft() {
@@ -158,26 +189,36 @@ function scheduleCloseLeft() {
   }, 120);
 }
 
-hamburger.addEventListener('mouseenter', openLeft);
-hamburger.addEventListener('mouseleave', scheduleCloseLeft);
-hamburger.addEventListener('click', () => {
-  if (leftPanel.classList.contains('open')) {
-    leftPanel.classList.remove('open');
-    hamburger.classList.remove('hovered');
-  } else {
-    openLeft();
-  }
-});
-leftPanel.addEventListener('mouseenter', () => clearTimeout(leftTimer));
-leftPanel.addEventListener('mouseleave', scheduleCloseLeft);
+if (isTouchDevice) {
+  /* Touch: single tap opens directly. No hover, no double-tap, no timers. */
+  hamburger.addEventListener('click', () => {
+    if (leftPanel.classList.contains('open')) {
+      closeAllPanels();
+    } else {
+      openLeft();
+    }
+  });
+} else {
+  hamburger.addEventListener('mouseenter', openLeft);
+  hamburger.addEventListener('mouseleave', scheduleCloseLeft);
+  hamburger.addEventListener('click', () => {
+    if (leftPanel.classList.contains('open')) {
+      leftPanel.classList.remove('open');
+      hamburger.classList.remove('hovered');
+    } else {
+      openLeft();
+    }
+  });
+  leftPanel.addEventListener('mouseenter', () => clearTimeout(leftTimer));
+  leftPanel.addEventListener('mouseleave', scheduleCloseLeft);
+}
 
-/* ── Right panel hover ────────────────── */
+/* ── Right panel (in-chat navigator) ──── */
 let rightTimer = null;
 
 function openRight() {
   clearTimeout(rightTimer);
-  rightPanel.classList.add('open');
-  rightTrigger.classList.add('hovered');
+  openPanel(rightPanel, rightTrigger);
 }
 
 function scheduleCloseRight() {
@@ -187,18 +228,27 @@ function scheduleCloseRight() {
   }, 120);
 }
 
-rightTrigger.addEventListener('mouseenter', openRight);
-rightTrigger.addEventListener('mouseleave', scheduleCloseRight);
-rightPanel.addEventListener('mouseenter', () => clearTimeout(rightTimer));
-rightPanel.addEventListener('mouseleave', scheduleCloseRight);
+if (isTouchDevice) {
+  rightTrigger.addEventListener('click', () => {
+    if (rightPanel.classList.contains('open')) {
+      closeAllPanels();
+    } else {
+      openRight();
+    }
+  });
+} else {
+  rightTrigger.addEventListener('mouseenter', openRight);
+  rightTrigger.addEventListener('mouseleave', scheduleCloseRight);
+  rightPanel.addEventListener('mouseenter', () => clearTimeout(rightTimer));
+  rightPanel.addEventListener('mouseleave', scheduleCloseRight);
+}
 
-/* ── Source Documents Panel hover / click ── */
+/* ── Source Documents Panel ───────────── */
 let docsTimer = null;
 
 function openDocs() {
   clearTimeout(docsTimer);
-  if (docsPanel) docsPanel.classList.add('open');
-  if (docsTrigger) docsTrigger.classList.add('hovered');
+  if (docsPanel && docsTrigger) openPanel(docsPanel, docsTrigger);
 }
 
 function scheduleCloseDocs() {
@@ -209,19 +259,29 @@ function scheduleCloseDocs() {
 }
 
 if (docsTrigger) {
-  docsTrigger.addEventListener('mouseenter', openDocs);
-  docsTrigger.addEventListener('mouseleave', scheduleCloseDocs);
-  docsTrigger.addEventListener('click', () => {
-    if (docsPanel.classList.contains('open')) {
-      docsPanel.classList.remove('open');
-      docsTrigger.classList.remove('hovered');
-    } else {
-      openDocs();
-    }
-  });
+  if (isTouchDevice) {
+    docsTrigger.addEventListener('click', () => {
+      if (docsPanel.classList.contains('open')) {
+        closeAllPanels();
+      } else {
+        openDocs();
+      }
+    });
+  } else {
+    docsTrigger.addEventListener('mouseenter', openDocs);
+    docsTrigger.addEventListener('mouseleave', scheduleCloseDocs);
+    docsTrigger.addEventListener('click', () => {
+      if (docsPanel.classList.contains('open')) {
+        docsPanel.classList.remove('open');
+        docsTrigger.classList.remove('hovered');
+      } else {
+        openDocs();
+      }
+    });
+  }
 }
 
-if (docsPanel) {
+if (docsPanel && !isTouchDevice) {
   docsPanel.addEventListener('mouseenter', () => clearTimeout(docsTimer));
   docsPanel.addEventListener('mouseleave', scheduleCloseDocs);
 }
@@ -231,8 +291,7 @@ document.querySelectorAll('.gm-doc-q').forEach(btn => {
   btn.addEventListener('click', () => {
     const questionText = btn.textContent.trim();
     if (questionText) {
-      if (docsPanel) docsPanel.classList.remove('open');
-      if (docsTrigger) docsTrigger.classList.remove('hovered');
+      closeAllPanels();
       useSuggestion(questionText);
     }
   });
@@ -247,7 +306,7 @@ function startNewChat() {
   }
 
   currentSessionId = Date.now();
-  chatTitleEl.textContent = 'New conversation';
+  chatTitleEl.textContent = '';
   msgsEl.innerHTML = '';
   showEmptyState();
   updateSuggestions([]);
