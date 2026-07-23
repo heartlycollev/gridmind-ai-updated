@@ -90,21 +90,12 @@ function generateSuggestions(sources) {
     return DEFAULT_SUGGESTIONS;
   }
 
-  const docNames = [...new Set(sources.map(s => s.document || s.doc).filter(Boolean))];
-  const primaryDoc = docNames[0] || "the documents";
-  const primaryPage = sources[0]?.page || 1;
-
-  const suggestions = [
-    `Tell me more about what is inside ${primaryDoc}`,
-    `What else is mentioned on page ${primaryPage} of ${primaryDoc}?`,
-    `Can you summarize the context you just used?`
-  ];
-
-  if (docNames.length > 1) {
-    suggestions[2] = `How does ${docNames[0]} compare with ${docNames[1]}?`;
+  const docNames = [...new Set(sources.map(s => s.document || s.doc || (s.filename || '').replace('.pdf', '').replace(/_/g, ' ')).filter(Boolean))];
+  if (docNames.length === 0) {
+    return DEFAULT_SUGGESTIONS;
   }
 
-  return suggestions;
+  return docNames.map(doc => `Tell me more about what is inside ${doc}`);
 }
 
 function updateSuggestions(sources = []) {
