@@ -618,7 +618,15 @@ inputEl.addEventListener('keydown', e => {
   }
 });
 
-sendBtn.addEventListener('click', sendMessage);
+if (isTouchDevice) {
+  /* Touch devices: single tap fires immediately on touchend, preventing hover delays */
+  sendBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    sendMessage();
+  });
+} else {
+  sendBtn.addEventListener('click', sendMessage);
+}
 
 /* ── Markdown rendering (bot answers only — user input stays escaped text) ── */
 if (window.marked) {

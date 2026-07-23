@@ -189,6 +189,7 @@ body {
   justify-content: center;
   z-index: 5;
   flex-shrink: 0;
+  pointer-events: none;
 }
 
 .gm-right-trigger {
@@ -204,6 +205,7 @@ body {
   transition: background 0.15s;
   flex-shrink: 0;
   position: relative;
+  pointer-events: auto;
 }
 
 .gm-right-trigger.hovered {
@@ -1199,13 +1201,37 @@ body {
 }
 @media (max-width: 800px) {
   .gm-chat-card { width: 100vw; height: 100vh; height: 100dvh; background: #000; border-radius: 0; border: none; }
-  .gm-left-zone, .gm-right-zone { width: 56px; }
+  
+  /* Trigger zones sit above backdrop and chat card */
+  .gm-left-zone, .gm-right-zone, .gm-docs-zone {
+    z-index: 25;
+  }
+
+  /* Hamburger & Left Zone aligned with topbar center */
+  .gm-left-zone {
+    width: 56px;
+    height: 48px;
+    padding-top: 0;
+    justify-content: center;
+  }
+
+  .gm-right-zone {
+    width: 56px;
+  }
 
   /* Larger tap targets on touch */
   .gm-hamburger, .gm-right-trigger, .gm-docs-trigger {
     width: 44px;
     height: 44px;
     font-size: 20px;
+  }
+
+  /* Touch-friendly send button target */
+  .gm-send {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+    border-radius: 9px;
   }
 
   /* Tooltips are hover-only and meaningless on touch — hide entirely */
@@ -1215,8 +1241,8 @@ body {
      Desktop keeps the halfway-down-left position untouched. */
   .gm-docs-zone {
     left: auto;
-    right: 6px;
-    top: 54px;
+    right: 8px;
+    top: 58px;
     height: auto;
     width: auto;
     justify-content: flex-start;
@@ -1226,12 +1252,13 @@ body {
      the viewport so it can never overflow off-screen like before. */
   .gm-docs-panel {
     left: auto;
-    right: 6px;
-    top: 104px;
+    right: 8px;
+    top: 108px;
     transform: scale(0.92) translateY(-6px);
     transform-origin: top right;
     width: min(360px, calc(100vw - 24px));
     max-height: min(560px, calc(100dvh - 130px));
+    z-index: 20;
   }
   .gm-docs-panel.open {
     transform: scale(1) translateY(0);
@@ -1241,6 +1268,7 @@ body {
      exceed the viewport width on very narrow phones either. */
   .gm-float-panel, .gm-right-panel {
     width: min(220px, calc(100vw - 20px));
+    z-index: 20;
   }
 
   /* Composer needs breathing room above the home-indicator / gesture bar */
