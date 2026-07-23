@@ -641,7 +641,9 @@ async function sendMessage() {
     typingEl.remove();
 
     if (!response.ok) {
-      throw new Error(`Server responded ${response.status}`);
+      const errData = await response.json().catch(() => ({}));
+      const errMsg = errData.reply || errData.detail || `Server error (${response.status})`;
+      throw new Error(errMsg);
     }
 
     const data = await response.json();
@@ -658,7 +660,7 @@ async function sendMessage() {
     errRow.className = 'gm-msg-block bot';
     errRow.innerHTML = `
       <span class="gm-msg-label">GridMind AI</span>
-      <div class="gm-bubble error">Could not reach the server. Make sure both servers are running.</div>
+      <div class="gm-bubble error">${escHtml(err.message || 'Could not reach the server. Make sure both servers are running.')}</div>
     `;
     msgsEl.appendChild(errRow);
     msgsEl.scrollTop = msgsEl.scrollHeight;
