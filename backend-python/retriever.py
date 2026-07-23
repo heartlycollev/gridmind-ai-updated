@@ -35,8 +35,8 @@ DEFAULT_TOP_K = 5
 
 # Relevance threshold: discard chunks with cosine distance > this value.
 # Distance 0.0 = identical, 1.0 = completely unrelated.
-# 0.75 filters out chunks with only superficial keyword overlap.
-MAX_DISTANCE = 0.75
+# 0.55 filters out off-topic queries (e.g. general knowledge or non-Kenyan energy queries).
+MAX_DISTANCE = 0.55
 
 if not VOYAGE_API_KEY:
     raise RuntimeError(

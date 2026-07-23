@@ -118,6 +118,86 @@ def contextualize(question: str, history: list[dict]) -> str:
         return question
 
 
+# ── Mechanism 1: Pre-retrieval Intent Classification ─────────────
+_GREETING_KEYWORDS = {
+    "hi", "hello", "hey", "greetings", "good morning", "good afternoon",
+    "good evening", "thanks", "thank you", "thankyou", "how are you",
+    "who are you", "what is your name", "what's your name", "bye", "goodbye",
+    "nice to meet you", "cool", "ok", "okay"
+}
+
+def classify_intent(question: str, history: list[dict] | None = None) -> str:
+    """
+    Classifies user question for Mechanism 1 (Pre-retrieval check).
+
+    Returns:
+        "GREETING" : Simple greetings or pleasantries (heuristic match)
+        "META"     : Questions about conversation history or past turns (LLM match)
+        "DOMAIN"   : Domain/factual questions -> proceed to RAG retrieval
+    """
+    cleaned = question.strip().lower().rstrip("!?.")
+
+    # 1. Fast heuristic for greetings & pleasantries
+    if cleaned in _GREETING_KEYWORDS or any(cleaned.startswith(g + " ") for g in ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"]):
+        if len(cleaned.split()) <= 6:
+            return "GREETING"
+
+    # 2. Fast LLM classifier fallback for meta-questions vs domain questions
+    classify_prompt = (
+        "You are a query classifier. Classify the user message into EXACTLY one category:\n"
+        "META: The user is explicitly asking about the ongoing chat history, past conversation turns, what was asked earlier, or asking to repeat or summarize prior turns (e.g. 'what was my first question?', 'what did I ask earlier?', 'repeat your previous answer', 'what did you say?').\n"
+        "DOMAIN: The user is asking a domain, factual, document, policy, legal, or general knowledge question (e.g. 'what are EPRA responsibilities?', 'what is solar energy?', 'what is the capital of France?').\n\n"
+        f"User Message: \"{question}\"\n\n"
+        "Respond with ONLY 'META' or 'DOMAIN':"
+    )
+
+    try:
+        response = _client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[{"role": "user", "content": classify_prompt}],
+            temperature=0.0,
+            max_tokens=10,
+        )
+        res_text = response.choices[0].message.content.strip().upper()
+        if res_text.startswith("META") or "META" in res_text:
+            return "META"
+    except Exception:
+        pass
+
+    return "DOMAIN"
+
+
+def generate_conversational_response(question: str, history: list[dict] | None = None) -> str:
+    """
+    Generates a natural conversational reply for greetings or meta-questions,
+    using conversation history if available, without querying vector DB.
+    """
+    system_instruction = (
+        "You are GridMind AI, an expert assistant on Kenyan energy legislation and policy.\n"
+        "Answer conversational greetings, pleasantries, or questions about the conversation history "
+        "naturally, politely, and concisely. If asked about previous questions or turns, use the "
+        "PREVIOUS CONVERSATION history to accurately answer. Do not invent facts, and do not cite document numbers."
+    )
+
+    convo_history = ""
+    if history:
+        convo_lines = [f"{t['role'].upper()}: {t['text']}" for t in history]
+        convo_history = "PREVIOUS CONVERSATION:\n" + "\n".join(convo_lines) + "\n\n"
+
+    prompt = f"{system_instruction}\n\n{convo_history}USER: {question}\nASSISTANT:"
+
+    try:
+        response = _client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            max_tokens=300,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception:
+        return "Hello! How can I help you today regarding Kenyan energy policy?"
+
+
 # ── Health check ───────────────────────────────────────────────
 def is_available() -> bool:
     """

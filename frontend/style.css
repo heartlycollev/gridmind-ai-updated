@@ -636,6 +636,153 @@ body {
 }
 
 /* ─────────────────────────────────────────
+   SOURCES PILL & FLOATING PANEL
+───────────────────────────────────────── */
+.gm-sources-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #111e15;
+  border: 0.5px solid #2a4a2e;
+  border-radius: 20px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #4a8e62;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+  width: fit-content;
+}
+
+.gm-sources-pill:hover,
+.gm-sources-pill.hovered {
+  background: #1a2820;
+  border-color: #3daa68;
+  color: #8de8a8;
+}
+
+.gm-sources-pill i {
+  font-size: 12px;
+  color: #3daa68;
+}
+
+.gm-sources-panel {
+  position: absolute;
+  width: 320px;
+  max-height: 420px;
+  background: #141414;
+  border: 0.5px solid #262626;
+  border-radius: 12px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.16s ease;
+  transform: scale(0.94) translateY(4px);
+}
+
+.gm-sources-panel.open {
+  opacity: 1;
+  pointer-events: all;
+  transform: scale(1) translateY(0);
+}
+
+.gm-sources-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 0.5px solid #222;
+  background: #181818;
+}
+
+.gm-sources-header-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e0e0e0;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.gm-sources-header-title i {
+  color: #5daa78;
+  font-size: 14px;
+}
+
+.gm-sources-count {
+  font-size: 10.5px;
+  color: #666;
+  background: #1e1e1e;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 0.5px solid #2a2a2a;
+}
+
+.gm-sources-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gm-sources-scroll::-webkit-scrollbar { width: 3px; }
+.gm-sources-scroll::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+
+.gm-source-item {
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: #181818;
+  border: 0.5px solid #242424;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gm-source-item:hover {
+  background: #1e1e1e;
+  border-color: #3daa68;
+}
+
+.gm-source-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.gm-source-item-doc {
+  font-size: 12px;
+  font-weight: 600;
+  color: #d4d4d4;
+}
+
+.gm-source-item-meta {
+  font-size: 10.5px;
+  color: #5daa78;
+}
+
+.gm-source-item-excerpt {
+  font-size: 11px;
+  color: #777;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ─────────────────────────────────────────
    TYPING INDICATOR
 ───────────────────────────────────────── */
 .gm-typing-block {

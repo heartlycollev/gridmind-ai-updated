@@ -24,6 +24,9 @@ const rightTrigger = document.getElementById('gm-right-trigger');
 const rightPanel   = document.getElementById('gm-right-panel');
 const sendBtn      = document.getElementById('gm-send');
 const backdrop     = document.getElementById('gm-mobile-backdrop');
+const sourcesPanel = document.getElementById('gm-sources-panel');
+const sourcesCount = document.getElementById('gm-sources-count');
+const sourcesList  = document.getElementById('gm-sources-list');
 
 /* True on touch/coarse-pointer devices (phones, most tablets).
    Used to bypass hover-based open/close logic, which is unreliable
@@ -151,7 +154,9 @@ async function checkRagStatus() {
 }
 checkRagStatus();
 
-/* ── Panel open/close helpers (shared by all three panels) ── */
+/* ── Panel open/close helpers (shared by all panels) ── */
+let sourcesTimer = null;
+
 function closeAllPanels() {
   leftPanel.classList.remove('open');
   hamburger.classList.remove('hovered');
@@ -159,14 +164,94 @@ function closeAllPanels() {
   rightTrigger.classList.remove('hovered');
   if (docsPanel)   docsPanel.classList.remove('open');
   if (docsTrigger) docsTrigger.classList.remove('hovered');
+  if (sourcesPanel) sourcesPanel.classList.remove('open');
+  document.querySelectorAll('.gm-sources-pill.hovered').forEach(el => el.classList.remove('hovered'));
   if (backdrop) backdrop.classList.remove('open');
 }
 
 function openPanel(panelEl, triggerEl) {
   closeAllPanels();
   panelEl.classList.add('open');
-  triggerEl.classList.add('hovered');
+  if (triggerEl) triggerEl.classList.add('hovered');
   if (isTouchDevice && backdrop) backdrop.classList.add('open');
+}
+
+function openSourcesPanel(pillEl, sources) {
+  clearTimeout(sourcesTimer);
+  closeAllPanels();
+
+  if (!sourcesPanel || !sourcesList) return;
+
+  // De-duplicate unique documents count for header
+  const uniqueDocs = [...new Set(sources.map(s => s.filename || s.document || s.doc).filter(Boolean))];
+  const uniqueCount = uniqueDocs.length || sources.length;
+
+  if (sourcesCount) {
+    sourcesCount.textContent = `${uniqueCount} doc${uniqueCount === 1 ? '' : 's'}`;
+  }
+
+  // Populate source items
+  sourcesList.innerHTML = '';
+  sources.forEach(s => {
+    const docName = s.document || s.doc || (s.filename || s.source || '').replace('.pdf', '').replace(/_/g, ' ');
+    const pageNum = s.page || 1;
+    const idxNum  = s.index ? `[${s.index}]` : '';
+    const excerpt = s.excerpt || s.text || '';
+
+    const item = document.createElement('div');
+    item.className = 'gm-source-item';
+    item.innerHTML = `
+      <div class="gm-source-item-top">
+        <span class="gm-source-item-doc">${escHtml(docName)}</span>
+        <span class="gm-source-item-meta">${idxNum} p. ${pageNum}</span>
+      </div>
+      ${excerpt ? `<div class="gm-source-item-excerpt">${escHtml(excerpt)}</div>` : ''}
+    `;
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openSourceModal(s);
+    });
+    sourcesList.appendChild(item);
+  });
+
+  // Position panel relative to root shell
+  const rect = pillEl.getBoundingClientRect();
+  const rootEl = document.getElementById('gm-root') || document.body;
+  const rootRect = rootEl.getBoundingClientRect();
+
+  let panelLeft = rect.left - rootRect.left;
+  let panelTop  = rect.bottom - rootRect.top + 6;
+
+  const maxLeft = rootRect.width - 330;
+  if (panelLeft > maxLeft) panelLeft = Math.max(10, maxLeft);
+  if (panelTop + 300 > rootRect.height) {
+    panelTop = Math.max(10, rect.top - rootRect.top - 310);
+  }
+
+  sourcesPanel.style.left = `${Math.max(10, panelLeft)}px`;
+  sourcesPanel.style.top  = `${Math.max(10, panelTop)}px`;
+
+  sourcesPanel.classList.add('open');
+  pillEl.classList.add('hovered');
+
+  if (isTouchDevice && backdrop) {
+    backdrop.classList.add('open');
+  }
+}
+
+function scheduleCloseSources(pillEl) {
+  sourcesTimer = setTimeout(() => {
+    if (sourcesPanel) sourcesPanel.classList.remove('open');
+    if (pillEl) pillEl.classList.remove('hovered');
+  }, 160);
+}
+
+if (sourcesPanel && !isTouchDevice) {
+  sourcesPanel.addEventListener('mouseenter', () => clearTimeout(sourcesTimer));
+  sourcesPanel.addEventListener('mouseleave', () => {
+    const activePill = document.querySelector('.gm-sources-pill.hovered');
+    scheduleCloseSources(activePill);
+  });
 }
 
 /* Tapping the backdrop (mobile only, sits behind whichever panel is open) dismisses it */
@@ -487,10 +572,30 @@ function appendBotBubble(text, sources = [], save = true) {
   row.appendChild(bubble);
   msgsEl.appendChild(row);
 
-  /* 4. Render secondary source chips below answer */
+  /* 4. Render collapsed Sources pill below answer ONLY if sources is non-empty */
   if (sources && sources.length > 0) {
-    const citesBlock = buildCitations(sources);
-    if (citesBlock) msgsEl.appendChild(citesBlock);
+    const uniqueDocs = [...new Set(sources.map(s => s.filename || s.document || s.doc).filter(Boolean))];
+    const count = uniqueDocs.length || sources.length;
+
+    const pill = document.createElement('div');
+    pill.className = 'gm-sources-pill';
+    pill.innerHTML = `<i class="ti ti-books"></i> Sources · ${count}`;
+
+    if (isTouchDevice) {
+      pill.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (sourcesPanel && sourcesPanel.classList.contains('open') && pill.classList.contains('hovered')) {
+          closeAllPanels();
+        } else {
+          openSourcesPanel(pill, sources);
+        }
+      });
+    } else {
+      pill.addEventListener('mouseenter', () => openSourcesPanel(pill, sources));
+      pill.addEventListener('mouseleave', () => scheduleCloseSources(pill));
+    }
+
+    row.appendChild(pill);
   }
 
   msgsEl.scrollTop = msgsEl.scrollHeight;
@@ -499,36 +604,6 @@ function appendBotBubble(text, sources = [], save = true) {
     const session = getCurrentSession();
     if (session) session.msgs.push({ role: 'bot', text, sources: sources || [] });
   }
-}
-
-function buildCitations(sources) {
-  if (!sources || sources.length === 0) return null;
-
-  const block = document.createElement('div');
-  block.className = 'gm-cites';
-
-  const label = document.createElement('span');
-  label.className = 'gm-cites-label';
-  label.textContent = 'Sources';
-  block.appendChild(label);
-
-  const seen = new Set();
-  sources.forEach(s => {
-    const docName = s.document || s.doc || (s.filename || s.source || '').replace('.pdf', '').replace(/_/g, ' ');
-    const key = `${docName}:${s.page}`;
-    if (seen.has(key)) return;
-    seen.add(key);
-
-    const chip = document.createElement('span');
-    chip.className = 'gm-chip';
-    const indexLabel = s.index ? `[${s.index}] ` : '';
-    chip.textContent = `${indexLabel}${docName} · p. ${s.page}`;
-    chip.title = "Click to view verbatim excerpt";
-    chip.addEventListener('click', () => openSourceModal(s));
-    block.appendChild(chip);
-  });
-
-  return block;
 }
 
 function showTyping() {

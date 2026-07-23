@@ -28,7 +28,7 @@ import traceback
 
 from retriever      import retrieve, is_ready
 from prompt_builder import build_prompt, format_sources
-from llm_client     import generate, is_available, contextualize
+from llm_client     import generate, is_available, contextualize, classify_intent, generate_conversational_response
 import memory
 
 
@@ -112,10 +112,11 @@ async def chat(req: ChatRequest):
 
     Pipeline:
         1. Validate the question
-        2. Retrieve top-k relevant chunks from ChromaDB
-        3. Build the grounded prompt
-        4. Send to Groq
-        5. Return answer + source citations
+        2. Check intent (Mechanism 1): Greetings & Meta-questions skip RAG, sources = []
+        3. For Domain queries (Mechanism 2): Retrieve top-k chunks from ChromaDB Cloud
+        4. Build the grounded prompt
+        5. Send to Groq
+        6. Return answer + source citations
     """
     question = req.question.strip()
 
@@ -129,9 +130,18 @@ async def chat(req: ChatRequest):
         # ── Step 0: Pull recent conversation history for this session ────────
         history = memory.get_history(req.session_id)
 
-        # ── Step 1: Retrieve relevant chunks ─────────────────────────────────
-        # Rewrite the question into a standalone form first, so follow-ups
-        # like "what about for solar?" retrieve the right chunks.
+        # ── Mechanism 1: Pre-retrieval check for Greetings & Meta-questions ──
+        intent = classify_intent(question, history)
+        if intent in ("GREETING", "META"):
+            answer = generate_conversational_response(question, history)
+            sources = []   # Explicitly set empty sources
+
+            memory.add_turn(req.session_id, "user", question)
+            memory.add_turn(req.session_id, "assistant", answer)
+
+            return ChatResponse(answer=answer, sources=sources)
+
+        # ── Mechanism 2: Domain queries -> RAG Retrieval & Relevance Gate ─────
         search_question = contextualize(question, history)
         chunks = retrieve(search_question, top_k=req.top_k)
 
@@ -141,7 +151,7 @@ async def chat(req: ChatRequest):
         # ── Step 3: Generate the answer ───────────────────────────────────────
         answer = generate(prompt)
 
-        # ── Step 4: Format sources for the frontend ───────────────────────────
+        # ── Step 4: Format sources for the frontend (empty if no chunks passed gate)
         sources = format_sources(chunks)
 
         # ── Step 5: Save this turn to conversation memory ─────────────────────
