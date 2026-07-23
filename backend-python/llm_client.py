@@ -17,8 +17,9 @@ load_dotenv(os.path.join(_DIR, ".env"))
 load_dotenv()
 
 # ── Configuration ──────────────────────────────────────────────
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-MODEL_NAME   = "llama-3.3-70b-versatile"   # best free-tier model on Groq
+GROQ_API_KEY   = os.getenv("GROQ_API_KEY")
+PRIMARY_MODEL  = "llama-3.3-70b-versatile"   # primary model
+FALLBACK_MODEL = "llama-3.1-8b-instant"      # ultra-fast fallback model with higher daily token limits (500k TPD)
 
 # Generation config — low temperature for factual legal Q&A
 TEMPERATURE      = 0.1
@@ -34,6 +35,33 @@ if not GROQ_API_KEY:
 _client = Groq(api_key=GROQ_API_KEY.strip())
 
 
+def _call_groq_with_fallback(messages: list[dict], temperature: float = TEMPERATURE, max_tokens: int = MAX_TOKENS) -> str:
+    """Helper that tries PRIMARY_MODEL and automatically falls back to FALLBACK_MODEL on rate limits."""
+    last_error = None
+    for model in [PRIMARY_MODEL, FALLBACK_MODEL]:
+        try:
+            res = _client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+            return res.choices[0].message.content.strip()
+        except Exception as e:
+            error_msg = str(e)
+            if "401" in error_msg or "invalid_api_key" in error_msg.lower():
+                raise RuntimeError("Invalid Groq API key. Check GROQ_API_KEY in backend-python/.env")
+            if "429" in error_msg or "rate_limit" in error_msg.lower() or "limit" in error_msg.lower():
+                last_error = e
+                continue
+            raise RuntimeError(f"Groq error: {error_msg}")
+
+    raise RuntimeError(
+        "Groq rate limit reached on primary model. Automatically falling back to llama-3.1-8b-instant... "
+        f"Original error: {last_error}"
+    )
+
+
 # ── Main generation function ───────────────────────────────────
 def generate(prompt: str) -> str:
     """
@@ -47,29 +75,7 @@ def generate(prompt: str) -> str:
     -------
     The model's response as a plain string.
     """
-    try:
-        response = _client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=TEMPERATURE,
-            max_tokens=MAX_TOKENS,
-        )
-        return response.choices[0].message.content.strip()
-
-    except Exception as e:
-        error_msg = str(e)
-
-        if "401" in error_msg or "invalid_api_key" in error_msg.lower():
-            raise RuntimeError(
-                "Invalid Groq API key. "
-                "Check GROQ_API_KEY in backend-python/.env"
-            )
-        if "429" in error_msg or "rate_limit" in error_msg.lower():
-            raise RuntimeError(
-                "Groq rate limit reached. "
-                "Wait a moment and try again."
-            )
-        raise RuntimeError(f"Groq error: {error_msg}")
+    return _call_groq_with_fallback([{"role": "user", "content": prompt}], temperature=TEMPERATURE, max_tokens=MAX_TOKENS)
 
 
 # ── Conversation-aware query rewriting ───────────────────────────
@@ -77,15 +83,6 @@ def contextualize(question: str, history: list[dict]) -> str:
     """
     Rewrites a follow-up question into a standalone question using the
     recent conversation history, WITHOUT touching the documents.
-
-    Why this exists:
-        Retrieval (retriever.retrieve) embeds only the raw question text.
-        A follow-up like "what about for solar?" carries no meaning on
-        its own — it needs "incentives" and "Kenya" pulled in from the
-        prior turn or ChromaDB will return irrelevant chunks.
-
-    If history is empty, the question is returned unchanged (no extra
-    API call — keeps single-turn questions fast).
     """
     if not history:
         return question
@@ -104,17 +101,13 @@ def contextualize(question: str, history: list[dict]) -> str:
     )
 
     try:
-        response = _client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[{"role": "user", "content": rewrite_prompt}],
+        rewritten = _call_groq_with_fallback(
+            [{"role": "user", "content": rewrite_prompt}],
             temperature=0.0,
-            max_tokens=120,
+            max_tokens=120
         )
-        rewritten = response.choices[0].message.content.strip()
         return rewritten or question
     except Exception:
-        # Rewriting is a nice-to-have — if it fails, fall back to the
-        # raw question rather than breaking the whole request.
         return question
 
 
@@ -152,13 +145,11 @@ def classify_intent(question: str, history: list[dict] | None = None) -> str:
     )
 
     try:
-        response = _client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[{"role": "user", "content": classify_prompt}],
+        res_text = _call_groq_with_fallback(
+            [{"role": "user", "content": classify_prompt}],
             temperature=0.0,
-            max_tokens=10,
-        )
-        res_text = response.choices[0].message.content.strip().upper()
+            max_tokens=10
+        ).upper()
         if res_text.startswith("META") or "META" in res_text:
             return "META"
     except Exception:
@@ -187,13 +178,11 @@ def generate_conversational_response(question: str, history: list[dict] | None =
     prompt = f"{system_instruction}\n\n{convo_history}USER: {question}\nASSISTANT:"
 
     try:
-        response = _client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[{"role": "user", "content": prompt}],
+        return _call_groq_with_fallback(
+            [{"role": "user", "content": prompt}],
             temperature=0.3,
-            max_tokens=300,
+            max_tokens=300
         )
-        return response.choices[0].message.content.strip()
     except Exception:
         return "Hello! How can I help you today regarding Kenyan energy policy?"
 
@@ -205,11 +194,8 @@ def is_available() -> bool:
     Used by the /health endpoint.
     """
     try:
-        _client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[{"role": "user", "content": "ping"}],
-            max_tokens=5,
-        )
+        _call_groq_with_fallback([{"role": "user", "content": "ping"}], max_tokens=5)
         return True
     except Exception:
+        return False
         return False
