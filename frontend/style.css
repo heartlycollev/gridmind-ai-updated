@@ -1219,6 +1219,12 @@ body {
     width: 56px;
   }
 
+  /* Title wrap mobile positioning to prevent overlap with RAG pill */
+  .gm-topbar-title-wrap {
+    left: 60px;
+    right: 110px;
+  }
+
   /* Larger tap targets on touch */
   .gm-hamburger, .gm-right-trigger, .gm-docs-trigger {
     width: 44px;
