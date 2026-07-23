@@ -9,7 +9,7 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #0d0d0d;
+  background: #000;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -24,7 +24,7 @@ body {
   width: 100vw;
   height: 100vh;
   height: 100dvh;
-  background: #111;
+  background: #000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -339,9 +339,9 @@ body {
 .gm-chat-card {
   width: 580px;
   height: 620px;
-  background: #1a1a1a;
+  background: #000;
   border-radius: 12px;
-  border: 0.5px solid #282828;
+  border: 0.5px solid #232323;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -349,72 +349,6 @@ body {
   z-index: 2;
 }
 
-@media (max-width: 800px) {
-  .gm-chat-card { width: 100vw; height: 100vh; height: 100dvh; border-radius: 0; border: none; }
-  .gm-left-zone, .gm-right-zone { width: 56px; }
-
-  /* Larger tap targets on touch */
-  .gm-hamburger, .gm-right-trigger, .gm-docs-trigger {
-    width: 44px;
-    height: 44px;
-    font-size: 20px;
-  }
-
-  /* Tooltips are hover-only and meaningless on touch — hide entirely */
-  .gm-tooltip { display: none !important; }
-
-  /* Docs trigger moves to top-right, just under the RAG pill, on mobile.
-     Desktop keeps the halfway-down-left position untouched. */
-  .gm-docs-zone {
-    left: auto;
-    right: 6px;
-    top: 54px;
-    height: auto;
-    width: auto;
-    justify-content: flex-start;
-  }
-
-  /* Panel anchors from the top-right now, and its width is capped to
-     the viewport so it can never overflow off-screen like before. */
-  .gm-docs-panel {
-    left: auto;
-    right: 6px;
-    top: 104px;
-    transform: scale(0.92) translateY(-6px);
-    transform-origin: top right;
-    width: min(360px, calc(100vw - 24px));
-    max-height: min(560px, calc(100dvh - 130px));
-  }
-  .gm-docs-panel.open {
-    transform: scale(1) translateY(0);
-  }
-
-  /* Left chat-history & right nav panels: keep anchored but never
-     exceed the viewport width on very narrow phones either. */
-  .gm-float-panel, .gm-right-panel {
-    width: min(220px, calc(100vw - 20px));
-  }
-
-  /* Composer needs breathing room above the home-indicator / gesture bar */
-  .gm-input-zone {
-    padding-bottom: calc(10px + env(safe-area-inset-bottom));
-  }
-
-  /* Backdrop shown behind any open panel on mobile, tap to dismiss */
-  .gm-mobile-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 15;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.18s ease;
-  }
-  .gm-mobile-backdrop.open {
-    opacity: 1;
-    pointer-events: all;
-  }
-}
 
 /* ─────────────────────────────────────────
    TOPBAR
@@ -1262,4 +1196,70 @@ body {
   visibility: visible;
   transform: translateY(-50%) translateX(0);
   transition-delay: 200ms;
+}
+@media (max-width: 800px) {
+  .gm-chat-card { width: 100vw; height: 100vh; height: 100dvh; background: #000; border-radius: 0; border: none; }
+  .gm-left-zone, .gm-right-zone { width: 56px; }
+
+  /* Larger tap targets on touch */
+  .gm-hamburger, .gm-right-trigger, .gm-docs-trigger {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+
+  /* Tooltips are hover-only and meaningless on touch — hide entirely */
+  .gm-tooltip { display: none !important; }
+
+  /* Docs trigger moves to top-right, just under the RAG pill, on mobile.
+     Desktop keeps the halfway-down-left position untouched. */
+  .gm-docs-zone {
+    left: auto;
+    right: 6px;
+    top: 54px;
+    height: auto;
+    width: auto;
+    justify-content: flex-start;
+  }
+
+  /* Panel anchors from the top-right now, and its width is capped to
+     the viewport so it can never overflow off-screen like before. */
+  .gm-docs-panel {
+    left: auto;
+    right: 6px;
+    top: 104px;
+    transform: scale(0.92) translateY(-6px);
+    transform-origin: top right;
+    width: min(360px, calc(100vw - 24px));
+    max-height: min(560px, calc(100dvh - 130px));
+  }
+  .gm-docs-panel.open {
+    transform: scale(1) translateY(0);
+  }
+
+  /* Left chat-history & right nav panels: keep anchored but never
+     exceed the viewport width on very narrow phones either. */
+  .gm-float-panel, .gm-right-panel {
+    width: min(220px, calc(100vw - 20px));
+  }
+
+  /* Composer needs breathing room above the home-indicator / gesture bar */
+  .gm-input-zone {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+
+  /* Backdrop shown behind any open panel on mobile, tap to dismiss */
+  .gm-mobile-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 15;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+  }
+  .gm-mobile-backdrop.open {
+    opacity: 1;
+    pointer-events: all;
+  }
 }
